@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "ДомВместе",
+    "slug": "dom-vmeste",
+    "scheme": "domvmeste",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "android": {
+      "package": "com.familyflow.app"
+    },
+    "ios": {
+      "bundleIdentifier": "com.familyflow.app"
+    }
+  }
+}

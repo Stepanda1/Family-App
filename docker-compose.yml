@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: family-app-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: family_app
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1410197140qzps
+    ports:
+      - "5432:5432"
+    volumes:
+      - family-app-postgres:/var/lib/postgresql/data
+
+volumes:
+  family-app-postgres:

@@ -1,0 +1,60 @@
+erDiagram
+    FAMILIES ||--o{ PARTICIPANTS : has
+    FAMILIES ||--o{ EXECUTORS : has
+    FAMILIES ||--o{ CATEGORIES : has
+    FAMILIES ||--o{ TASKS : owns
+    PARTICIPANTS ||--o{ TASKS : creates
+    PARTICIPANTS ||--o{ TASK_EXECUTIONS : performs
+    PARTICIPANTS o|--|| EXECUTORS : mirrors
+    CATEGORIES ||--o{ TASKS : classifies
+    TASKS ||--o{ ASSIGNMENTS : links
+    EXECUTORS ||--o{ ASSIGNMENTS : receives
+    TASKS ||--o{ TASK_EXECUTIONS : tracked_by
+
+    FAMILIES {
+      uuid id PK
+      string name
+      string timezone
+      string invite_code
+    }
+    PARTICIPANTS {
+      uuid id PK
+      uuid family_id FK
+      string display_name
+      string role
+      string color
+    }
+    EXECUTORS {
+      uuid id PK
+      uuid family_id FK
+      uuid participant_id FK
+      string display_name
+      string kind
+    }
+    CATEGORIES {
+      uuid id PK
+      uuid family_id FK
+      string name
+      string item_type
+      string color
+    }
+    TASKS {
+      uuid id PK
+      uuid family_id FK
+      uuid creator_participant_id FK
+      uuid category_id FK
+      string title
+      string item_type
+      string status
+    }
+    ASSIGNMENTS {
+      uuid task_id FK
+      uuid executor_id FK
+      datetime assigned_at
+    }
+    TASK_EXECUTIONS {
+      uuid participant_id FK
+      uuid task_id FK
+      datetime executed_at
+      string status
+    }

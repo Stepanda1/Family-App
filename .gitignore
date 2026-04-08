@@ -1,0 +1,17 @@
+node_modules/
+.expo/
+.turbo/
+dist/
+build/
+coverage/
+.env
+.env.*
+!.env.example
+apps/server/generated/
+apps/server/prisma/dev.db
+apps/server/prisma/dev.db-journal
+*.log
+expo-qr*.png
+*.tsbuildinfo
+Thumbs.db
+.DS_Store

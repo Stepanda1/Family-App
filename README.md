@@ -1,0 +1,97 @@
+# Family Flow
+
+Мобильное приложение для семей для управления задачами и совместным расписанием.
+
+Проект собран по материалам из:
+
+- `Project seminar/2 module` — требования, UML и ТЗ;
+- `Databases` — схема из 7 связанных таблиц;
+- `Course project` — исследование рынка, MVP и UX-направление.
+
+## Что внутри
+
+- `apps/mobile` — мобильный клиент на Expo + React Native + Expo Router.
+- `apps/server` — API на Fastify + Prisma.
+- `packages/contracts` — общие типы между клиентом и сервером.
+- `db/sql` — SQL-артефакты под PostgreSQL.
+- `docs` — архитектура, БД, API и диаграммы.
+
+## Технологический стек
+
+- Mobile: Expo, React Native, TypeScript, Expo Router, React Query, Zustand
+- API: Fastify, Zod, Prisma
+- Data: PostgreSQL 16, Prisma schema, Docker Compose
+- Architecture: monorepo через npm workspaces
+
+## Почему этот стек
+
+- Expo и React Native дают быстрый кроссплатформенный мобильный MVP под Android/iOS.
+- Fastify проще и быстрее для компактного API, чем перегруженный серверный фреймворк.
+- Prisma даёт единый источник истины для БД, типов и запросов.
+- PostgreSQL соответствует вашим требованиям из ТЗ и учебным требованиям по БД.
+
+## MVP-функции
+
+- Семейная группа и роли `родитель/ребёнок`
+- Домашний overview-экран
+- Общий календарь
+- Задачи с назначением исполнителей
+- Общий список покупок
+- База данных из 7 связанных таблиц, приведённых к 3НФ
+
+## Быстрый запуск
+
+1. Скопировать `apps/server/.env.example` в `apps/server/.env`.
+2. Поднять PostgreSQL:
+
+```bash
+docker compose up -d
+```
+
+Если контейнер уже существовал с другими учётными данными, пересоздайте его вместе с volume, иначе Postgres сохранит старый пароль:
+
+```bash
+docker compose down -v
+docker compose up -d
+```
+
+3. Установить зависимости:
+
+```bash
+npm install
+```
+
+4. Сгенерировать Prisma client и применить миграции:
+
+```bash
+npm run db:generate
+npm run db:migrate
+npm run db:seed
+```
+
+5. Запустить API:
+
+```bash
+npm run dev:server
+```
+
+6. Запустить мобильный клиент:
+
+```bash
+npm run dev:mobile
+```
+
+## Основные экраны
+
+- `Дом` — ключевые события и срочные дела
+- `Календарь` — совместное расписание семьи
+- `Списки` — задачи и покупки в одном потоке
+- `Семья` — участники и код приглашения
+
+## Документация
+
+- [Архитектура](./docs/architecture.md)
+- [База данных](./docs/database.md)
+- [API](./docs/api.md)
+- [ER-диаграмма](./docs/diagrams/er.mmd)
+- [Диаграмма компонентов](./docs/diagrams/components.mmd)

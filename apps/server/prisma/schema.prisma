@@ -1,0 +1,197 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum FamilyRole {
+  PARENT
+  CHILD
+}
+
+enum AppLanguage {
+  ru
+  en
+}
+
+enum AccountProvider {
+  GOOGLE
+  APPLE
+  TELEGRAM
+}
+
+enum ExecutorKind {
+  FAMILY_MEMBER
+  EXTERNAL_HELPER
+}
+
+enum PlannerItemType {
+  TASK
+  EVENT
+  SHOPPING
+}
+
+enum PlannerPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum PlannerStatus {
+  NEW
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum ExecutionStatus {
+  SUCCESS
+  LATE
+  SKIPPED
+}
+
+model Family {
+  id          String        @id @default(uuid()) @db.Uuid
+  name        String        @db.VarChar(120)
+  timezone    String        @default("Asia/Yekaterinburg") @db.VarChar(80)
+  inviteCode  String        @unique @db.VarChar(12)
+  appLanguage AppLanguage   @default(ru)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  participants Participant[]
+  executors   Executor[]
+  categories  Category[]
+  accountConnections AccountConnection[]
+  tasks       Task[]
+
+  @@map("families")
+}
+
+model Participant {
+  id           String          @id @default(uuid()) @db.Uuid
+  familyId     String          @db.Uuid
+  displayName  String          @db.VarChar(80)
+  role         FamilyRole
+  color        String          @db.VarChar(7)
+  phone        String?         @db.VarChar(20)
+  birthDate    DateTime?       @db.Date
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  family       Family          @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  createdTasks Task[]          @relation("CreatedTasks")
+  executions   TaskExecution[]
+  executor     Executor?
+
+  @@index([familyId])
+  @@unique([familyId, displayName])
+  @@map("participants")
+}
+
+model Executor {
+  id          String         @id @default(uuid()) @db.Uuid
+  familyId    String         @db.Uuid
+  participantId String?      @unique @db.Uuid
+  displayName String         @db.VarChar(80)
+  kind        ExecutorKind
+  contactInfo String?        @db.VarChar(120)
+  createdAt   DateTime       @default(now())
+  family      Family         @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  participant Participant?   @relation(fields: [participantId], references: [id], onDelete: SetNull)
+  assignments Assignment[]
+
+  @@index([familyId])
+  @@map("executors")
+}
+
+model Category {
+  id         String          @id @default(uuid()) @db.Uuid
+  familyId   String          @db.Uuid
+  name       String          @db.VarChar(80)
+  itemType   PlannerItemType
+  color      String          @db.VarChar(7)
+  sortOrder  Int             @default(0)
+  createdAt  DateTime        @default(now())
+  family     Family          @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  tasks      Task[]
+
+  @@unique([familyId, itemType, name])
+  @@index([familyId, itemType])
+  @@map("categories")
+}
+
+model Task {
+  id                   String           @id @default(uuid()) @db.Uuid
+  familyId             String           @db.Uuid
+  creatorParticipantId String           @db.Uuid
+  categoryId           String           @db.Uuid
+  title                String           @db.VarChar(140)
+  description          String?
+  itemType             PlannerItemType
+  priority             PlannerPriority  @default(MEDIUM)
+  status               PlannerStatus    @default(NEW)
+  listName             String?          @db.VarChar(80)
+  location             String?          @db.VarChar(140)
+  scheduledStartAt     DateTime?
+  dueAt                DateTime?
+  reminderAt           DateTime?
+  completedAt          DateTime?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  family               Family           @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  creator              Participant      @relation("CreatedTasks", fields: [creatorParticipantId], references: [id], onDelete: Restrict)
+  category             Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  assignments          Assignment[]
+  executions           TaskExecution[]
+
+  @@index([familyId, itemType, scheduledStartAt])
+  @@index([familyId, status, dueAt])
+  @@map("tasks")
+}
+
+model Assignment {
+  taskId       String   @db.Uuid
+  executorId   String   @db.Uuid
+  assignedAt   DateTime @default(now())
+  startAt      DateTime?
+  dueAt        DateTime?
+  reminderOffsetMinutes Int?
+  task         Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  executor     Executor @relation(fields: [executorId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, executorId])
+  @@index([executorId])
+  @@map("assignments")
+}
+
+model TaskExecution {
+  participantId          String          @db.Uuid
+  taskId                 String          @db.Uuid
+  executedAt             DateTime        @default(now())
+  actualDurationMinutes  Int?
+  status                 ExecutionStatus
+  note                   String?
+  participant            Participant     @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  task                   Task            @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@id([participantId, taskId, executedAt])
+  @@index([taskId, executedAt])
+  @@map("task_executions")
+}
+
+model AccountConnection {
+  id           String          @id @default(uuid()) @db.Uuid
+  familyId     String          @db.Uuid
+  provider     AccountProvider
+  accountEmail String          @db.VarChar(140)
+  displayName  String          @db.VarChar(80)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  family       Family          @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+  @@unique([familyId, provider, accountEmail])
+  @@map("account_connections")
+}

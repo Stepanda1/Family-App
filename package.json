@@ -1,0 +1,17 @@
+{
+  "name": "family-app-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:mobile": "npm run dev --workspace @family-app/mobile",
+    "dev:server": "npm run dev --workspace @family-app/server",
+    "build": "npm run build --workspace @family-app/server && npm run lint --workspace @family-app/mobile",
+    "db:generate": "npm run db:generate --workspace @family-app/server",
+    "db:migrate": "npm run db:migrate --workspace @family-app/server",
+    "db:seed": "npm run db:seed --workspace @family-app/server"
+  }
+}

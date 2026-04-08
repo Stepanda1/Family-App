@@ -1,0 +1,9 @@
+flowchart LR
+    Mobile["Expo Mobile App
+    React Native + Expo Router"] --> API["Fastify API
+    Zod validation"]
+    API --> Prisma["Prisma ORM"]
+    Prisma --> Postgres["PostgreSQL 16"]
+    Contracts["Shared contracts
+    TypeScript types"] --> Mobile
+    Contracts --> API
