@@ -1,9 +1,15 @@
 import "../src/lib/load-env.js";
 import { PrismaClient } from "@prisma/client";
+import { hashPassword } from "../src/lib/auth/passwords.js";
 
 const prisma = new PrismaClient();
 
 async function main() {
+  await prisma.authChallenge.deleteMany();
+  await prisma.userSession.deleteMany();
+  await prisma.oAuthAccount.deleteMany();
+  await prisma.familyMembership.deleteMany();
+  await prisma.user.deleteMany();
   await prisma.taskExecution.deleteMany();
   await prisma.assignment.deleteMany();
   await prisma.task.deleteMany();
@@ -11,6 +17,37 @@ async function main() {
   await prisma.category.deleteMany();
   await prisma.participant.deleteMany();
   await prisma.family.deleteMany();
+
+  const [ownerUser, parentUser, childUser, guestUser] = await Promise.all([
+    prisma.user.create({
+      data: {
+        email: "demo@family.app",
+        displayName: "Demo Owner",
+        passwordHash: await hashPassword("DemoPassw0rd!")
+      }
+    }),
+    prisma.user.create({
+      data: {
+        email: "parent@family.app",
+        displayName: "Demo Parent",
+        passwordHash: await hashPassword("DemoPassw0rd!")
+      }
+    }),
+    prisma.user.create({
+      data: {
+        email: "child@family.app",
+        displayName: "Demo Child",
+        passwordHash: await hashPassword("DemoPassw0rd!")
+      }
+    }),
+    prisma.user.create({
+      data: {
+        email: "guest@family.app",
+        displayName: "Demo Guest",
+        passwordHash: await hashPassword("DemoPassw0rd!")
+      }
+    })
+  ]);
 
   const family = await prisma.family.create({
     data: {
@@ -43,7 +80,7 @@ async function main() {
     }
   });
 
-  const [alexey, marina, ira] = family.participants;
+  const [anna, maxim, nika] = family.participants;
 
   const executors = await Promise.all(
     family.participants.map((participant) =>
@@ -92,7 +129,7 @@ async function main() {
   const dinner = await prisma.task.create({
     data: {
       familyId: family.id,
-      creatorParticipantId: marina.id,
+      creatorParticipantId: maxim.id,
       categoryId: eventCategory.id,
       title: "Семейный ужин",
       itemType: "EVENT",
@@ -107,7 +144,7 @@ async function main() {
   const groceries = await prisma.task.create({
     data: {
       familyId: family.id,
-      creatorParticipantId: alexey.id,
+      creatorParticipantId: anna.id,
       categoryId: shoppingCategory.id,
       title: "Купить молоко и овощи",
       itemType: "SHOPPING",
@@ -121,7 +158,7 @@ async function main() {
   const cleanRoom = await prisma.task.create({
     data: {
       familyId: family.id,
-      creatorParticipantId: marina.id,
+      creatorParticipantId: maxim.id,
       categoryId: taskCategory.id,
       title: "Убрать детскую",
       itemType: "TASK",
@@ -143,7 +180,7 @@ async function main() {
 
   await prisma.taskExecution.create({
     data: {
-      participantId: ira.id,
+      participantId: nika.id,
       taskId: cleanRoom.id,
       executedAt: new Date("2026-04-09T18:00:00+05:00"),
       actualDurationMinutes: 25,
@@ -166,6 +203,15 @@ async function main() {
         accountEmail: "domvmeste_demo@telegram.local",
         displayName: "Семейный Telegram"
       }
+    ]
+  });
+
+  await prisma.familyMembership.createMany({
+    data: [
+      { familyId: family.id, userId: ownerUser.id, role: "OWNER", participantId: anna.id },
+      { familyId: family.id, userId: parentUser.id, role: "PARENT", participantId: maxim.id },
+      { familyId: family.id, userId: childUser.id, role: "CHILD", participantId: nika.id },
+      { familyId: family.id, userId: guestUser.id, role: "GUEST" }
     ]
   });
 }

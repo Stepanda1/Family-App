@@ -12,6 +12,13 @@ enum FamilyRole {
   CHILD
 }
 
+enum FamilyAccessRole {
+  OWNER
+  PARENT
+  CHILD
+  GUEST
+}
+
 enum AppLanguage {
   ru
   en
@@ -21,6 +28,15 @@ enum AccountProvider {
   GOOGLE
   APPLE
   TELEGRAM
+}
+
+enum OAuthProvider {
+  GOOGLE
+  APPLE
+}
+
+enum AuthChallengeType {
+  MFA_LOGIN
 }
 
 enum ExecutorKind {
@@ -53,6 +69,24 @@ enum ExecutionStatus {
   SKIPPED
 }
 
+enum OutboxStatus {
+  PENDING
+  PROCESSING
+  DONE
+  DEAD
+}
+
+enum EmailDeliveryStatus {
+  SENT
+  FAILED
+}
+
+enum ApiIdempotencyStatus {
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 model Family {
   id          String        @id @default(uuid()) @db.Uuid
   name        String        @db.VarChar(120)
@@ -62,10 +96,12 @@ model Family {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   participants Participant[]
+  memberships FamilyMembership[]
   executors   Executor[]
   categories  Category[]
   accountConnections AccountConnection[]
   tasks       Task[]
+  auditEvents AuditEvent[]  @relation("AuditFamily")
 
   @@map("families")
 }
@@ -81,6 +117,7 @@ model Participant {
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
   family       Family          @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  membership   FamilyMembership?
   createdTasks Task[]          @relation("CreatedTasks")
   executions   TaskExecution[]
   executor     Executor?
@@ -88,6 +125,25 @@ model Participant {
   @@index([familyId])
   @@unique([familyId, displayName])
   @@map("participants")
+}
+
+model FamilyMembership {
+  id            String           @id @default(uuid()) @db.Uuid
+  familyId      String           @db.Uuid
+  userId        String           @db.Uuid
+  role          FamilyAccessRole
+  participantId String?          @unique @db.Uuid
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  family        Family           @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  participant   Participant?     @relation(fields: [participantId], references: [id], onDelete: SetNull)
+
+  @@unique([familyId, userId])
+  @@index([userId])
+  @@index([familyId])
+  @@map("family_memberships")
 }
 
 model Executor {
@@ -137,6 +193,7 @@ model Task {
   scheduledStartAt     DateTime?
   dueAt                DateTime?
   reminderAt           DateTime?
+  reminderSentAt       DateTime?
   completedAt          DateTime?
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
@@ -145,10 +202,35 @@ model Task {
   category             Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   assignments          Assignment[]
   executions           TaskExecution[]
+  searchDocument       TaskSearchDocument?
 
   @@index([familyId, itemType, scheduledStartAt])
   @@index([familyId, status, dueAt])
   @@map("tasks")
+}
+
+model TaskSearchDocument {
+  id                String          @id @default(uuid()) @db.Uuid
+  familyId          String          @db.Uuid
+  taskId            String          @unique @db.Uuid
+  itemType          PlannerItemType
+  status            PlannerStatus
+  priority          PlannerPriority
+  title             String          @db.VarChar(140)
+  description       String?
+  categoryName      String?         @db.VarChar(80)
+  listName          String?         @db.VarChar(80)
+  location          String?         @db.VarChar(140)
+  executorNamesText String?
+  contentPlain      String
+  searchVector      Unsupported("tsvector")?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  task              Task            @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([familyId, updatedAt])
+  @@index([familyId, itemType, status])
+  @@map("task_search_documents")
 }
 
 model Assignment {
@@ -194,4 +276,167 @@ model AccountConnection {
   @@index([familyId])
   @@unique([familyId, provider, accountEmail])
   @@map("account_connections")
+}
+
+model User {
+  id            String         @id @default(uuid()) @db.Uuid
+  email         String         @unique @db.VarChar(254)
+  displayName   String?        @db.VarChar(80)
+  passwordHash  String?
+  mfaEnabled    Boolean        @default(false)
+  mfaSecretEnc  String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  oauthAccounts OAuthAccount[]
+  sessions      UserSession[]
+  challenges    AuthChallenge[]
+  memberships   FamilyMembership[]
+  auditEvents   AuditEvent[]   @relation("AuditActor")
+
+  @@map("users")
+}
+
+model OAuthAccount {
+  id              String        @id @default(uuid()) @db.Uuid
+  userId          String        @db.Uuid
+  provider        OAuthProvider
+  providerSubject String        @db.VarChar(200)
+  accountEmail    String        @db.VarChar(254)
+  displayName     String?       @db.VarChar(80)
+  createdAt       DateTime      @default(now())
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerSubject])
+  @@index([userId])
+  @@map("oauth_accounts")
+}
+
+model UserSession {
+  id                   String   @id @default(uuid()) @db.Uuid
+  userId               String   @db.Uuid
+  userAgent            String?
+  ipAddress            String?  @db.VarChar(45)
+  mfaVerified          Boolean  @default(false)
+  refreshTokenHash     String   @db.Char(64)
+  refreshTokenCreatedAt DateTime @default(now())
+  refreshTokenRotatedAt DateTime?
+  refreshTokenExpiresAt DateTime
+  lastSeenAt           DateTime?
+  revokedAt            DateTime?
+  revokeReason         String?  @db.VarChar(80)
+  createdAt            DateTime @default(now())
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([revokedAt])
+  @@map("user_sessions")
+}
+
+model AuthChallenge {
+  id         String            @id @default(uuid()) @db.Uuid
+  userId     String            @db.Uuid
+  type       AuthChallengeType
+  expiresAt  DateTime
+  consumedAt DateTime?
+  attempts   Int               @default(0)
+  metadata   Json?
+  createdAt  DateTime          @default(now())
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@index([expiresAt])
+  @@map("auth_challenges")
+}
+
+model AuditEvent {
+  id              String           @id @default(uuid()) @db.Uuid
+  familyId         String?          @db.Uuid
+  actorUserId      String?          @db.Uuid
+  actorSessionId   String?          @db.Uuid
+  actorFamilyRole  FamilyAccessRole?
+  actorEmail       String?          @db.VarChar(254)
+  actorDisplayName String?          @db.VarChar(80)
+  action           String           @db.VarChar(80)
+  entityType       String           @db.VarChar(80)
+  entityId         String?          @db.VarChar(100)
+  diff             Json?
+  ipAddress        String?          @db.VarChar(45)
+  userAgent        String?
+  correlationId    String?          @db.VarChar(64)
+  traceId          String?          @db.VarChar(32)
+  spanId           String?          @db.VarChar(16)
+  metadata         Json?
+  createdAt        DateTime         @default(now())
+
+  family           Family?          @relation("AuditFamily", fields: [familyId], references: [id], onDelete: SetNull)
+  actor            User?            @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([familyId, createdAt])
+  @@index([actorUserId, createdAt])
+  @@index([entityType, entityId])
+  @@index([correlationId])
+  @@index([traceId])
+  @@index([actorSessionId, createdAt])
+  @@map("audit_events")
+}
+
+model OutboxEvent {
+  id          String       @id @default(uuid()) @db.Uuid
+  familyId    String?      @db.Uuid
+  type        String       @db.VarChar(120)
+  payload     Json
+  status      OutboxStatus @default(PENDING)
+  availableAt DateTime     @default(now())
+  lockedAt    DateTime?
+  lockedBy    String?      @db.VarChar(80)
+  attempts    Int          @default(0)
+  maxAttempts Int          @default(20)
+  lastError   String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  processedAt DateTime?
+  deadAt      DateTime?
+
+  emailDeliveries EmailDelivery[]
+
+  @@index([status, availableAt])
+  @@index([familyId, createdAt])
+  @@map("outbox_events")
+}
+
+model EmailDelivery {
+  id           String             @id @default(uuid()) @db.Uuid
+  outboxEventId String            @db.Uuid
+  toEmail      String             @db.VarChar(254)
+  subject      String             @db.VarChar(140)
+  body         String
+  status       EmailDeliveryStatus @default(SENT)
+  createdAt    DateTime           @default(now())
+
+  outboxEvent  OutboxEvent        @relation(fields: [outboxEventId], references: [id], onDelete: Cascade)
+
+  @@unique([outboxEventId, toEmail])
+  @@index([toEmail, createdAt])
+  @@map("email_deliveries")
+}
+
+model ApiIdempotencyKey {
+  id                 String               @id @default(uuid()) @db.Uuid
+  idempotencyKey     String               @db.VarChar(255)
+  operation          String               @db.VarChar(120)
+  subject            String               @db.VarChar(255)
+  requestHash        String               @db.Char(64)
+  status             ApiIdempotencyStatus @default(PROCESSING)
+  responseStatusCode Int?
+  responseHeaders    Json?
+  responseBody       Json?
+  errorMessage       String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  expiresAt          DateTime
+
+  @@unique([idempotencyKey, operation, subject])
+  @@index([expiresAt])
+  @@index([status, createdAt])
+  @@map("api_idempotency_keys")
 }

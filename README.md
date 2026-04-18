@@ -75,6 +75,13 @@ npm run db:seed
 npm run dev:server
 ```
 
+Опционально: запустить фоновые процессы (outbox worker + cron), чтобы работали email-уведомления и напоминания:
+
+```bash
+npm run worker:dev --workspace @family-app/server
+npm run cron:dev --workspace @family-app/server
+```
+
 6. Запустить мобильный клиент:
 
 ```bash
