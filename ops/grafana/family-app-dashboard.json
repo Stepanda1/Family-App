@@ -1,0 +1,144 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "panels": [
+    {
+      "datasource": "Prometheus",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "targets": [
+        {
+          "expr": "sum by (route) (rate(family_app_http_requests_total[5m]))",
+          "legendFormat": "{{route}}"
+        }
+      ],
+      "title": "HTTP Request Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, route) (rate(family_app_http_request_duration_ms_bucket[5m])))",
+          "legendFormat": "{{route}} p95"
+        }
+      ],
+      "title": "HTTP p95 Latency (ms)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
+      "id": 3,
+      "targets": [
+        {
+          "expr": "sum(rate(family_app_http_request_errors_total[5m])) by (status_class)",
+          "legendFormat": "{{status_class}}"
+        }
+      ],
+      "title": "HTTP Error Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 8 },
+      "id": 4,
+      "targets": [
+        {
+          "expr": "family_app_http_requests_in_flight",
+          "legendFormat": "in-flight"
+        }
+      ],
+      "title": "In-flight Requests",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 },
+      "id": 5,
+      "targets": [
+        {
+          "expr": "family_app_runtime{metric=\"family_app_readiness\",check=\"database\"}",
+          "legendFormat": "database"
+        }
+      ],
+      "title": "Readiness",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 6,
+      "targets": [
+        {
+          "expr": "family_app_runtime{metric=\"family_app_outbox_events\"}",
+          "legendFormat": "{{status}}"
+        }
+      ],
+      "title": "Outbox Queue Depth",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "id": 7,
+      "targets": [
+        {
+          "expr": "sum(rate(family_app_background_job_runs_total[5m])) by (component, status)",
+          "legendFormat": "{{component}} {{status}}"
+        }
+      ],
+      "title": "Background Job Throughput",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 24 },
+      "id": 8,
+      "targets": [
+        {
+          "expr": "family_app_runtime{metric=\"family_app_due_reminders_total\"}",
+          "legendFormat": "due reminders"
+        }
+      ],
+      "title": "Reminder Backlog",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 24 },
+      "id": 9,
+      "targets": [
+        {
+          "expr": "family_app_runtime{metric=\"nodejs_eventloop_lag_seconds\"}",
+          "legendFormat": "event-loop lag"
+        }
+      ],
+      "title": "Event Loop Lag",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 24 },
+      "id": 10,
+      "targets": [
+        {
+          "expr": "family_app_runtime{metric=~\"process_(resident|heap_used|heap_total|external)_memory_bytes\"}",
+          "legendFormat": "{{metric}}"
+        }
+      ],
+      "title": "Memory Footprint",
+      "type": "timeseries"
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["family-app", "backend", "observability"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "title": "Family App Backend",
+  "version": 1
+}

@@ -1,0 +1,62 @@
+groups:
+  - name: family-app-api
+    rules:
+      - alert: FamilyAppApiHigh5xxRate
+        expr: sum(rate(family_app_http_request_errors_total{status_class="5xx"}[5m])) > 0.1
+        for: 10m
+        labels:
+          severity: critical
+          service: family-app-api
+        annotations:
+          summary: "Family App API returns elevated 5xx responses"
+          description: "5xx error rate stayed above 0.1 req/s for 10 minutes."
+
+      - alert: FamilyAppApiHighLatencyP95
+        expr: histogram_quantile(0.95, sum by (le) (rate(family_app_http_request_duration_ms_bucket[5m]))) > 750
+        for: 15m
+        labels:
+          severity: warning
+          service: family-app-api
+        annotations:
+          summary: "Family App API p95 latency is elevated"
+          description: "p95 latency stayed above 750ms for 15 minutes."
+
+      - alert: FamilyAppOutboxDeadLettersPresent
+        expr: family_app_runtime{metric="family_app_outbox_events",status="dead"} > 0
+        for: 5m
+        labels:
+          severity: critical
+          service: family-app-worker
+        annotations:
+          summary: "Dead-letter outbox events detected"
+          description: "At least one outbox event remained DEAD for more than 5 minutes."
+
+      - alert: FamilyAppWorkerRetrySpike
+        expr: sum(rate(family_app_background_job_runs_total{component="worker",status="retry"}[10m])) > 0.05
+        for: 15m
+        labels:
+          severity: warning
+          service: family-app-worker
+        annotations:
+          summary: "Outbox worker retry rate is elevated"
+          description: "Worker retries exceeded the expected baseline for 15 minutes."
+
+      - alert: FamilyAppDatabaseNotReady
+        expr: family_app_runtime{metric="family_app_readiness",check="database"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: family-app-api
+        annotations:
+          summary: "Family App database readiness probe is failing"
+          description: "The readiness gauge reports the database as unavailable."
+
+      - alert: FamilyAppEventLoopLagHigh
+        expr: family_app_runtime{metric="nodejs_eventloop_lag_seconds"} > 0.2
+        for: 10m
+        labels:
+          severity: warning
+          service: family-app-api
+        annotations:
+          summary: "Node.js event-loop lag is elevated"
+          description: "Mean event-loop lag exceeded 200ms for 10 minutes."
