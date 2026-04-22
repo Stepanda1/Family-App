@@ -1,0 +1,23 @@
+region             = "eu-frankfurt-1"
+tenancy_ocid       = "ocid1.tenancy.oc1..replace_me"
+compartment_ocid   = "ocid1.compartment.oc1..replace_me"
+user_ocid          = "ocid1.user.oc1..replace_me"
+fingerprint        = "aa:bb:cc:dd:ee:ff"
+private_key_path   = "~/.oci/oci_api_key.pem"
+private_key_password = null
+
+# Oracle recommends pinning a region-specific image OCID.
+# Pick the latest Ubuntu ARM image for your region:
+# https://docs.oracle.com/en-us/iaas/Content/terraform/ref-images.htm
+image_ocid = "ocid1.image.oc1.eu-frankfurt-1..replace_me"
+
+ssh_public_key = "ssh-ed25519 AAAA...replace_me"
+
+instance_display_name = "family-app-vm"
+shape                 = "VM.Standard.A1.Flex"
+shape_ocpus           = 2
+shape_memory_gb       = 12
+boot_volume_size_gb   = 100
+api_port              = 4000
+repo_url              = "https://github.com/Stepanda1/Family-App.git"
+repo_branch           = "main"

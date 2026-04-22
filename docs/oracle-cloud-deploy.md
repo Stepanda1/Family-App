@@ -32,6 +32,58 @@
 Официально Oracle даёт Always Free ARM-ресурсы до `4 OCPU / 24 GB RAM`:
 https://docs.oracle.com/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm
 
+## Вариант без ручного накликивания VM
+
+Добавлен Terraform-комплект:
+
+- `ops/oracle-cloud/terraform/versions.tf`
+- `ops/oracle-cloud/terraform/main.tf`
+- `ops/oracle-cloud/terraform/variables.tf`
+- `ops/oracle-cloud/terraform/outputs.tf`
+- `ops/oracle-cloud/terraform/terraform.tfvars.example`
+- `ops/oracle-cloud/terraform/cloud-init.yaml.tftpl`
+
+Он создаёт:
+
+- VCN
+- public subnet
+- internet gateway
+- security list c `22/tcp` и `4000/tcp`
+- VM `VM.Standard.A1.Flex`
+
+И на первом boot через cloud-init:
+
+- ставит Docker
+- клонирует репозиторий
+- копирует `.env.oracle.example` в `.env.oracle`
+- устанавливает `family-app.service`
+
+Остаётся только заполнить OCI credentials и выполнить `terraform apply`.
+
+Команды:
+
+```bash
+cd ops/oracle-cloud/terraform
+cp terraform.tfvars.example terraform.tfvars
+terraform init
+terraform apply
+```
+
+Нужно заполнить в `terraform.tfvars`:
+
+- `tenancy_ocid`
+- `compartment_ocid`
+- `user_ocid`
+- `fingerprint`
+- `private_key_path`
+- `ssh_public_key`
+- `image_ocid`
+
+Почему `image_ocid` вручную:
+
+Oracle рекомендует пинить region-specific image OCID, а не полагаться на динамический поиск через data source:
+https://docs.oracle.com/en-us/iaas/Content/terraform/ref-images.htm
+
 ## 2. Откройте входящий трафик
 
 В OCI Security List / Network Security Group откройте:
