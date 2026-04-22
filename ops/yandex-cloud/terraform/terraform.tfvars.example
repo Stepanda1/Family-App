@@ -1,0 +1,23 @@
+service_account_key_file = "/absolute/path/to/authorized_key.json"
+cloud_id                 = "b1gxxxxxxxxxxxxxxxxx"
+folder_id                = "b1gxxxxxxxxxxxxxxxxx"
+zone                     = "ru-central1-a"
+
+# Pick an Ubuntu image ID for your zone.
+# You can find current IDs in the official image list:
+# https://yandex.cloud/en/docs/compute/operations/images-with-pre-installed-software/get-list
+image_id = "fd8xxxxxxxxxxxxxxxxx"
+
+instance_name      = "family-app-vm"
+cores              = 2
+memory_gb          = 4
+core_fraction      = 20
+boot_disk_size_gb  = 40
+boot_disk_type     = "network-ssd"
+api_port           = 4000
+
+ssh_user       = "ubuntu"
+ssh_public_key = "ssh-ed25519 AAAA...replace_me"
+
+repo_url    = "https://github.com/Stepanda1/Family-App.git"
+repo_branch = "main"

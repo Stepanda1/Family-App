@@ -206,6 +206,15 @@ EXPO_PUBLIC_API_URL=https://<your-render-api>.onrender.com
 
 Это путь без зависимости от ноутбука: backend живёт на вашей VM и стартует через `systemd` после ребута самой машины.
 
+## Yandex Cloud
+
+Если удобнее взять `2 месяца` гранта в Yandex Cloud, добавлен отдельный Terraform-комплект:
+
+- [yandex-cloud-deploy.md](./docs/yandex-cloud-deploy.md)
+- `ops/yandex-cloud/terraform/*`
+
+Он создаёт VM и сеть в Yandex Cloud, а затем поднимает backend на самой VM через cloud-init и `systemd`.
+
 ## Основные экраны
 
 - `Дом` — ключевые события и срочные дела
