@@ -1,0 +1,128 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: family-app-postgres
+    restart: unless-stopped
+    env_file:
+      - .env.oracle
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - family-app-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ../..
+      dockerfile: apps/server/Dockerfile
+    container_name: family-app-api
+    restart: unless-stopped
+    env_file:
+      - .env.oracle
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      PORT: ${PORT}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+      ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL}
+      REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS}
+      AUTH_REQUIRED: ${AUTH_REQUIRED}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      APPLE_CLIENT_ID: ${APPLE_CLIENT_ID}
+      MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY}
+      MFA_ISSUER: ${MFA_ISSUER}
+      MFA_RETURN_SECRET: ${MFA_RETURN_SECRET}
+      WORKER_POLL_MS: ${WORKER_POLL_MS}
+      WORKER_LEASE_MS: ${WORKER_LEASE_MS}
+      WORKER_BATCH_SIZE: ${WORKER_BATCH_SIZE}
+      CRON_INTERVAL_MS: ${CRON_INTERVAL_MS}
+      CRON_BATCH_SIZE: ${CRON_BATCH_SIZE}
+    command: sh -c "npm run db:deploy --workspace @family-app/server && npm run start --workspace @family-app/server"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${PORT}:${PORT}"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:' + process.env.PORT + '/health').then((res)=>{if(!res.ok) process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: apps/server/Dockerfile
+    container_name: family-app-worker
+    restart: unless-stopped
+    env_file:
+      - .env.oracle
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      PORT: ${PORT}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+      ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL}
+      REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS}
+      AUTH_REQUIRED: ${AUTH_REQUIRED}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      APPLE_CLIENT_ID: ${APPLE_CLIENT_ID}
+      MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY}
+      MFA_ISSUER: ${MFA_ISSUER}
+      MFA_RETURN_SECRET: ${MFA_RETURN_SECRET}
+      WORKER_POLL_MS: ${WORKER_POLL_MS}
+      WORKER_LEASE_MS: ${WORKER_LEASE_MS}
+      WORKER_BATCH_SIZE: ${WORKER_BATCH_SIZE}
+      CRON_INTERVAL_MS: ${CRON_INTERVAL_MS}
+      CRON_BATCH_SIZE: ${CRON_BATCH_SIZE}
+    command: sh -c "npm run worker --workspace @family-app/server"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+
+  cron:
+    build:
+      context: ../..
+      dockerfile: apps/server/Dockerfile
+    container_name: family-app-cron
+    restart: unless-stopped
+    env_file:
+      - .env.oracle
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      PORT: ${PORT}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+      ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL}
+      REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS}
+      AUTH_REQUIRED: ${AUTH_REQUIRED}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      APPLE_CLIENT_ID: ${APPLE_CLIENT_ID}
+      MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY}
+      MFA_ISSUER: ${MFA_ISSUER}
+      MFA_RETURN_SECRET: ${MFA_RETURN_SECRET}
+      WORKER_POLL_MS: ${WORKER_POLL_MS}
+      WORKER_LEASE_MS: ${WORKER_LEASE_MS}
+      WORKER_BATCH_SIZE: ${WORKER_BATCH_SIZE}
+      CRON_INTERVAL_MS: ${CRON_INTERVAL_MS}
+      CRON_BATCH_SIZE: ${CRON_BATCH_SIZE}
+    command: sh -c "npm run cron --workspace @family-app/server"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+
+volumes:
+  family-app-postgres:

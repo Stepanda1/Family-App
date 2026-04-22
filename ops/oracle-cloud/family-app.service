@@ -1,0 +1,16 @@
+[Unit]
+Description=Family App backend stack
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/family-app/ops/oracle-cloud
+ExecStart=/usr/bin/docker compose -f /opt/family-app/ops/oracle-cloud/docker-compose.oracle.yml --env-file /opt/family-app/ops/oracle-cloud/.env.oracle up -d --build
+ExecStop=/usr/bin/docker compose -f /opt/family-app/ops/oracle-cloud/docker-compose.oracle.yml --env-file /opt/family-app/ops/oracle-cloud/.env.oracle down
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target

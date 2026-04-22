@@ -194,6 +194,18 @@ EXPO_PUBLIC_API_URL=https://<your-render-api>.onrender.com
 
 6. После этого пересоберите APK, чтобы мобильное приложение ходило уже в удалённый backend.
 
+## Oracle Cloud Always Free VM
+
+Если нужен бесплатный удалённый backend без sleep-режима, подготовлен отдельный комплект под Oracle VM:
+
+- [oracle-cloud-deploy.md](./docs/oracle-cloud-deploy.md)
+- `ops/oracle-cloud/docker-compose.oracle.yml`
+- `ops/oracle-cloud/.env.oracle.example`
+- `ops/oracle-cloud/bootstrap-ubuntu-arm.sh`
+- `ops/oracle-cloud/family-app.service`
+
+Это путь без зависимости от ноутбука: backend живёт на вашей VM и стартует через `systemd` после ребута самой машины.
+
 ## Основные экраны
 
 - `Дом` — ключевые события и срочные дела
