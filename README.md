@@ -152,6 +152,48 @@ npm run build:mobile:android:preview
 npm run build:mobile:android:production
 ```
 
+## Удалённый backend без ноутбука
+
+Для truly always-on режима добавлен `render.yaml` в корень репозитория. Он описывает удалённый backend-контур в Render:
+
+- `family-app-api` — публичный web service
+- `family-app-worker` — фоновый обработчик outbox
+- `family-app-cron` — long-running процесс напоминаний
+- `family-app-postgres` — managed PostgreSQL
+
+Почему именно так:
+
+- free web service у Render засыпает после 15 минут без трафика;
+- free план недоступен для background workers;
+- free Postgres у Render истекает через 30 дней.
+
+Поэтому для независимого постоянного backend нужен платный минимальный контур.
+
+Деплой:
+
+1. Убедитесь, что `render.yaml` уже запушен в GitHub.
+2. Откройте:
+
+```text
+https://dashboard.render.com/blueprint/new?repo=https://github.com/Stepanda1/Family-App
+```
+
+3. Подтвердите создание Blueprint.
+4. Заполните секреты:
+
+- `JWT_ACCESS_SECRET`
+- `MFA_ENCRYPTION_KEY`
+- при необходимости `GOOGLE_CLIENT_ID`
+- при необходимости `APPLE_CLIENT_ID`
+
+5. После первого деплоя возьмите публичный URL `family-app-api` и пропишите его в `apps/mobile/.env`:
+
+```bash
+EXPO_PUBLIC_API_URL=https://<your-render-api>.onrender.com
+```
+
+6. После этого пересоберите APK, чтобы мобильное приложение ходило уже в удалённый backend.
+
 ## Основные экраны
 
 - `Дом` — ключевые события и срочные дела
