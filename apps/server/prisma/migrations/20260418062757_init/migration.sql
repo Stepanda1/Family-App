@@ -1,0 +1,3 @@
+-- Intentionally empty.
+-- This migration directory existed without a SQL file, which breaks `prisma migrate deploy`
+-- in containerized startup flows.

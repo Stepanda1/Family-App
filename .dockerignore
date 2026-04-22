@@ -1,0 +1,12 @@
+node_modules
+apps/mobile/node_modules
+apps/server/node_modules
+packages/contracts/node_modules
+.git
+.expo
+dist
+build
+coverage
+*.log
+Report course project
+expo-qr*.png

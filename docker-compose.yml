@@ -11,6 +11,112 @@ services:
       - "5432:5432"
     volumes:
       - family-app-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d family_app"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    container_name: family-app-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:1410197140qzps@postgres:5432/family_app?schema=public
+      PORT: 4000
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-change-me}
+      JWT_ISSUER: ${JWT_ISSUER:-family-app-api}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-family-app-mobile}
+      ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL:-15m}
+      REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS:-30}
+      AUTH_REQUIRED: ${AUTH_REQUIRED:-false}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      APPLE_CLIENT_ID: ${APPLE_CLIENT_ID:-}
+      MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:-}
+      MFA_ISSUER: ${MFA_ISSUER:-Family App}
+      MFA_RETURN_SECRET: ${MFA_RETURN_SECRET:-false}
+      WORKER_POLL_MS: ${WORKER_POLL_MS:-1000}
+      WORKER_LEASE_MS: ${WORKER_LEASE_MS:-60000}
+      WORKER_BATCH_SIZE: ${WORKER_BATCH_SIZE:-10}
+      CRON_INTERVAL_MS: ${CRON_INTERVAL_MS:-60000}
+      CRON_BATCH_SIZE: ${CRON_BATCH_SIZE:-50}
+    command: sh -c "npm run db:deploy --workspace @family-app/server && npm run start --workspace @family-app/server"
+    ports:
+      - "4000:4000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/health').then((res)=>{if(!res.ok) process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    container_name: family-app-worker
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:1410197140qzps@postgres:5432/family_app?schema=public
+      PORT: 4000
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-change-me}
+      JWT_ISSUER: ${JWT_ISSUER:-family-app-api}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-family-app-mobile}
+      ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL:-15m}
+      REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS:-30}
+      AUTH_REQUIRED: ${AUTH_REQUIRED:-false}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      APPLE_CLIENT_ID: ${APPLE_CLIENT_ID:-}
+      MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:-}
+      MFA_ISSUER: ${MFA_ISSUER:-Family App}
+      MFA_RETURN_SECRET: ${MFA_RETURN_SECRET:-false}
+      WORKER_POLL_MS: ${WORKER_POLL_MS:-1000}
+      WORKER_LEASE_MS: ${WORKER_LEASE_MS:-60000}
+      WORKER_BATCH_SIZE: ${WORKER_BATCH_SIZE:-10}
+      CRON_INTERVAL_MS: ${CRON_INTERVAL_MS:-60000}
+      CRON_BATCH_SIZE: ${CRON_BATCH_SIZE:-50}
+    command: sh -c "npm run worker --workspace @family-app/server"
+
+  cron:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    container_name: family-app-cron
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:1410197140qzps@postgres:5432/family_app?schema=public
+      PORT: 4000
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-change-me}
+      JWT_ISSUER: ${JWT_ISSUER:-family-app-api}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-family-app-mobile}
+      ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL:-15m}
+      REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS:-30}
+      AUTH_REQUIRED: ${AUTH_REQUIRED:-false}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      APPLE_CLIENT_ID: ${APPLE_CLIENT_ID:-}
+      MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:-}
+      MFA_ISSUER: ${MFA_ISSUER:-Family App}
+      MFA_RETURN_SECRET: ${MFA_RETURN_SECRET:-false}
+      WORKER_POLL_MS: ${WORKER_POLL_MS:-1000}
+      WORKER_LEASE_MS: ${WORKER_LEASE_MS:-60000}
+      WORKER_BATCH_SIZE: ${WORKER_BATCH_SIZE:-10}
+      CRON_INTERVAL_MS: ${CRON_INTERVAL_MS:-60000}
+      CRON_BATCH_SIZE: ${CRON_BATCH_SIZE:-50}
+    command: sh -c "npm run cron --workspace @family-app/server"
 
 volumes:
   family-app-postgres:

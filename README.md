@@ -88,6 +88,37 @@ npm run cron:dev --workspace @family-app/server
 npm run dev:mobile
 ```
 
+## Backend всегда поднят
+
+Для постоянного фонового запуска backend теперь есть Docker Compose сервисы:
+
+- `postgres`
+- `api`
+- `worker`
+- `cron`
+
+Запуск:
+
+```bash
+npm run backend:up
+```
+
+Полезные команды:
+
+```bash
+npm run backend:logs
+npm run backend:restart
+npm run backend:down
+```
+
+Сервисы backend запускаются с `restart: unless-stopped`, поэтому после старта Docker будет поднимать их автоматически после перезапуска Docker Desktop.
+
+Чтобы автозапуск происходил после входа в Windows, можно установить launcher в папку Startup:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\install-backend-autostart.ps1
+```
+
 ## Android APK без Expo Go
 
 Чтобы поставить приложение на телефон как обычное Android-приложение, используйте installable build через EAS:

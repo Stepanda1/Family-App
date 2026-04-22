@@ -9,11 +9,12 @@
     "cron:dev": "tsx watch src/cron.ts",
     "build": "tsc -p tsconfig.json",
     "benchmark:cache": "npm run build && node dist/apps/server/src/scripts/benchmark-cache.js",
-    "start": "node dist/index.js",
+    "start": "node dist/apps/server/src/index.js",
     "worker": "node dist/apps/server/src/worker.js",
     "cron": "node dist/apps/server/src/cron.js",
     "test": "npm run build && node dist/apps/server/src/tests/auth-utils.test.js",
     "db:generate": "prisma generate",
+    "db:deploy": "prisma migrate deploy",
     "db:migrate": "prisma migrate dev --name init",
     "db:seed": "npm run build && node dist/apps/server/prisma/seed.js"
   },
