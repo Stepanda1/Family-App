@@ -4,20 +4,33 @@
     "slug": "dom-vmeste",
     "scheme": "domvmeste",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "plugins": [
       "expo-router",
-      "expo-font"
+      "expo-font",
+      "./plugins/with-react-native-monorepo-fix"
     ],
     "experiments": {
       "typedRoutes": true
     },
     "android": {
-      "package": "com.familyflow.app"
+      "package": "com.familyflow.app",
+      "versionCode": 1
     },
     "ios": {
-      "bundleIdentifier": "com.familyflow.app"
-    }
+      "bundleIdentifier": "com.familyflow.app",
+      "buildNumber": "1"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b0d549f7-4016-4017-acb1-0c6bf2d681f4"
+      }
+    },
+    "owner": "stepanda"
   }
 }

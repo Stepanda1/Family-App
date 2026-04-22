@@ -88,6 +88,39 @@ npm run cron:dev --workspace @family-app/server
 npm run dev:mobile
 ```
 
+## Android APK без Expo Go
+
+Чтобы поставить приложение на телефон как обычное Android-приложение, используйте installable build через EAS:
+
+1. Проверьте `apps/mobile/.env`:
+
+```bash
+EXPO_PUBLIC_API_URL=http://<IP_ВАШЕГО_КОМПЬЮТЕРА>:4000
+```
+
+`localhost` здесь не подойдёт: на телефоне это будет сам телефон, а не ваш компьютер.
+
+2. Запустите backend и базу данных.
+3. Выполните вход в Expo:
+
+```bash
+npx eas-cli login
+```
+
+4. Запустите сборку APK:
+
+```bash
+npm run build:mobile:android:preview
+```
+
+5. После завершения EAS Build даст ссылку на `.apk`. Этот файл можно скачать на телефон и установить без Expo Go.
+
+Для публикации в Google Play используйте production-профиль:
+
+```bash
+npm run build:mobile:android:production
+```
+
 ## Основные экраны
 
 - `Дом` — ключевые события и срочные дела
