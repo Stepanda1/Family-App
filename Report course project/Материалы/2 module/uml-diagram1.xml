@@ -1,0 +1,138 @@
+<mxGraphModel dx="1000" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+    
+    <!-- SWIMLANE: Пользователь -->
+    <mxCell id="lane_user" value="Пользователь (User)" style="swimlane;html=1;childLayout=stackLayout;resizeParent=1;resizeParentMax=0;horizontal=1;startSize=40;horizontalStack=0;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+      <mxGeometry x="80" y="40" width="320" height="740" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="start" value="" style="ellipse;html=1;shape=startState;fillColor=#000000;strokeColor=#ff0000;" vertex="1" parent="lane_user">
+      <mxGeometry x="145" y="60" width="30" height="30" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="act_init" value="Нажать &quot;Новая задача&quot;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="lane_user">
+      <mxGeometry x="80" y="130" width="160" height="40" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="act_input" value="Ввод данных&#xa;(Название, Категория)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="lane_user">
+      <mxGeometry x="80" y="280" width="160" height="50" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="act_select" value="Выбор исполнителя&#xa;(Список Participants)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="lane_user">
+      <mxGeometry x="80" y="480" width="160" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- SWIMLANE: Система -->
+    <mxCell id="lane_system" value="Система (System)" style="swimlane;html=1;childLayout=stackLayout;resizeParent=1;resizeParentMax=0;horizontal=1;startSize=40;horizontalStack=0;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+      <mxGeometry x="400" y="40" width="360" height="740" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="act_show" value="Отобразить форму" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="lane_system">
+      <mxGeometry x="100" y="200" width="160" height="40" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="gateway" value="Валидация" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="lane_system">
+      <mxGeometry x="130" y="340" width="100" height="60" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="fork" value="" style="line;strokeWidth=4;html=1;perimeter=backbonePerimeter;points=[];outlineConnect=0;" vertex="1" parent="lane_system">
+      <mxGeometry x="80" y="560" width="200" height="10" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="act_db" value="Сохранение в БД&#xa;(INSERT Tasks)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="lane_system">
+      <mxGeometry x="20" y="600" width="140" height="50" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="act_push" value="Отправка Push&#xa;исполнителю" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="lane_system">
+      <mxGeometry x="200" y="600" width="140" height="50" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="join" value="" style="line;strokeWidth=4;html=1;perimeter=backbonePerimeter;points=[];outlineConnect=0;" vertex="1" parent="lane_system">
+      <mxGeometry x="80" y="680" width="200" height="10" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="end" value="" style="ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#ff0000;" vertex="1" parent="lane_system">
+      <mxGeometry x="165" y="700" width="30" height="30" as="geometry" />
+    </mxCell>
+
+    <!-- СВЯЗИ (Edges) -->
+    
+    <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;" edge="1" parent="1" source="start" target="act_init">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;" edge="1" parent="1" source="act_init" target="act_show">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="240" y="220" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    
+    <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;" edge="1" parent="1" source="act_show" target="act_input">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="580" y="305" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    
+    <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;" edge="1" parent="1" source="act_input" target="gateway">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="240" y="370" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    
+    <mxCell id="e_no" value="Ошибка" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontColor=#FF0000;" edge="1" parent="1" source="gateway" target="act_input">
+      <mxGeometry x="-0.8421" relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="640" y="370" />
+          <mxPoint x="640" y="420" />
+          <mxPoint x="120" y="420" />
+          <mxPoint x="120" y="330" />
+        </Array>
+        <mxPoint as="offset" />
+      </mxGeometry>
+    </mxCell>
+    
+    <mxCell id="e_yes" value="OK" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;fontColor=#009900;" edge="1" parent="1" source="gateway" target="act_select">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="580" y="505" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    
+    <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;" edge="1" parent="1" source="act_select" target="fork">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="240" y="565" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    
+    <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;" edge="1" parent="1" source="fork" target="act_db">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;" edge="1" parent="1" source="fork" target="act_push">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;" edge="1" parent="1" source="act_db" target="join">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;" edge="1" parent="1" source="act_push" target="join">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;" edge="1" parent="1" source="join" target="end">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+  </root>
+</mxGraphModel>

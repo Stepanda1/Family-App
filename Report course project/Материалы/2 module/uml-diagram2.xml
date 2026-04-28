@@ -1,0 +1,132 @@
+<mxGraphModel dx="1000" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+    
+    <!-- === ЛИНИИ ЖИЗНИ (Lifelines) === -->
+    
+    <!-- User -->
+    <mxCell id="L_User" value="Пользователь&#xa;(Actor)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+      <mxGeometry x="80" y="80" width="100" height="480" as="geometry" />
+    </mxCell>
+    
+    <!-- App -->
+    <mxCell id="L_App" value="Мобильное ПО&#xa;(Client)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+      <mxGeometry x="280" y="80" width="100" height="480" as="geometry" />
+    </mxCell>
+    <!-- Активация на App -->
+    <mxCell id="Act_App" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="L_App">
+      <mxGeometry x="45" y="70" width="10" height="40" as="geometry" />
+    </mxCell>
+
+    <!-- Server -->
+    <mxCell id="L_Server" value="Сервер&#xa;(API Controller)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+      <mxGeometry x="480" y="80" width="100" height="480" as="geometry" />
+    </mxCell>
+    <!-- Активация на Server -->
+    <mxCell id="Act_Server" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="L_Server">
+      <mxGeometry x="45" y="110" width="10" height="240" as="geometry" />
+    </mxCell>
+
+    <!-- DB -->
+    <mxCell id="L_DB" value="База Данных&#xa;(PostgreSQL)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+      <mxGeometry x="680" y="80" width="100" height="480" as="geometry" />
+    </mxCell>
+    <!-- Активация на DB -->
+    <mxCell id="Act_DB" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="L_DB">
+      <mxGeometry x="45" y="140" width="10" height="120" as="geometry" />
+    </mxCell>
+
+    <!-- === СООБЩЕНИЯ (Messages) === -->
+
+    <!-- 1. Нажать кнопку -->
+    <mxCell id="msg1" value="Нажать &quot;Выполнено&quot;" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1" source="L_User" target="Act_App">
+      <mxGeometry width="80" relative="1" as="geometry">
+        <mxPoint x="130" y="150" as="sourcePoint" />
+        <mxPoint x="210" y="150" as="targetPoint" />
+        <Array as="points">
+          <mxPoint x="230" y="150" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- 2. POST запрос -->
+    <mxCell id="msg2" value="POST /task/complete" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1" source="L_App" target="Act_Server">
+      <mxGeometry width="80" relative="1" as="geometry">
+        <mxPoint x="330" y="190" as="sourcePoint" />
+        <mxPoint x="410" y="190" as="targetPoint" />
+        <Array as="points">
+          <mxPoint x="430" y="190" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- 3. SQL Update -->
+    <mxCell id="msg3" value="UPDATE Tasks..." style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1" source="Act_Server" target="Act_DB">
+      <mxGeometry width="80" relative="1" as="geometry">
+        <mxPoint x="530" y="220" as="sourcePoint" />
+        <mxPoint x="610" y="220" as="targetPoint" />
+        <Array as="points">
+          <mxPoint x="630" y="220" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- 4. SQL Insert Log -->
+    <mxCell id="msg4" value="INSERT Log..." style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1" source="Act_Server" target="Act_DB">
+      <mxGeometry width="80" relative="1" as="geometry">
+        <mxPoint x="530" y="250" as="sourcePoint" />
+        <mxPoint x="610" y="250" as="targetPoint" />
+        <Array as="points">
+          <mxPoint x="630" y="250" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- 5. DB OK -->
+    <mxCell id="msg5" value="OK (Committed)" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" edge="1" parent="1" source="Act_DB" target="Act_Server">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="720" y="290" as="sourcePoint" />
+        <mxPoint x="540" y="290" as="targetPoint" />
+        <Array as="points">
+          <mxPoint x="630" y="290" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- 6. Async Notify (Self call) -->
+    <mxCell id="msg6" value="Уведомление (Async)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1" source="Act_Server" target="Act_Server">
+      <mxGeometry x="0.087" y="30" width="80" relative="1" as="geometry">
+        <mxPoint x="535" y="310" as="sourcePoint" />
+        <mxPoint x="535" y="350" as="targetPoint" />
+        <Array as="points">
+          <mxPoint x="580" y="310" />
+          <mxPoint x="580" y="340" />
+        </Array>
+        <mxPoint as="offset" />
+      </mxGeometry>
+    </mxCell>
+
+    <!-- 7. HTTP 200 -->
+    <mxCell id="msg7" value="HTTP 200 OK" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" edge="1" parent="1" source="Act_Server" target="L_App">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="530" y="380" as="sourcePoint" />
+        <mxPoint x="330" y="380" as="targetPoint" />
+        <Array as="points">
+          <mxPoint x="430" y="380" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- 8. UI Update -->
+    <mxCell id="msg8" value="Обновить интерфейс" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" edge="1" parent="1" source="L_App" target="L_User">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="330" y="410" as="sourcePoint" />
+        <mxPoint x="130" y="410" as="targetPoint" />
+        <Array as="points">
+          <mxPoint x="230" y="410" />
+        </Array>
+      </mxGeometry>
+    </mxCell>
+  </root>
+</mxGraphModel>
